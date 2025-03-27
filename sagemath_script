@@ -1,0 +1,46 @@
+import itertools
+
+var_names = ['x_{}'.format(i) for i in range(0,16)]
+R = PolynomialRing(QQ, var_names, order='lex')
+R.inject_variables()
+
+poly_List = []
+for x in R.gens(): poly_List.append(prod([(x-i) for i in [1..4]]))
+
+row_List = []
+for i in range(4):
+    temp =[]
+    for j in range(4):
+        temp.append(poly_List[i*4+j])
+    row_List.append(temp)
+
+col_List = []
+for i in range(4):
+    temp = []
+    for j in range(4):
+        temp.append(poly_List[i+4*j])
+    col_List.append(temp)
+
+square_List =[]
+for i in range(4):
+    start = (i//2)*8 +(i%2)*2
+    temp = []
+    for j in range(4):
+        temp.append(poly_List[start + j%2 + (j//2)*4])
+    square_List.append(temp)
+
+adjacent_List = row_List + col_List + square_List
+
+diff_List = []
+for l in adjacent_List:
+    comb = list(itertools.combinations(l,2))
+    for c in comb:
+        diff = c[0] - c[1]
+        vars = diff.variables()
+        diff_List.append(diff/(vars[0]-vars[1]))
+
+initial_info = [x_8-2,x_9-1,x_11-3,x_13-3,x_15-1]
+
+I = R.ideal(initial_info + diff_List + poly_List)
+G = I.groebner_basis()
+show(G)
